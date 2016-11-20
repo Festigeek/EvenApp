@@ -1,0 +1,42 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="ch.hes_so.eventapp.MainActivity"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:title="@string/action_settings"
+        app:showAsAction="never"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <item
+        android:id="@+id/action_add"
+        android:icon="@android:drawable/ic_input_add"
+        android:orderInCategory="1"
+        android:title="Add"
+        app:showAsAction="ifRoom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <item
+        android:id="@+id/action_modify"
+        android:icon="@android:drawable/ic_menu_edit"
+        android:orderInCategory="2"
+        android:title="Modify"
+        app:showAsAction="ifRoom"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content" />
+
+    <item
+        android:id="@+id/action_search"
+        android:icon="@android:drawable/ic_menu_search"
+        android:orderInCategory="3"
+        android:title="Search"
+        app:showAsAction="ifRoom"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content" />
+</menu>
