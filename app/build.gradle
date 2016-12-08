@@ -37,6 +37,6 @@ dependencies {
         exclude group: 'org.apache.httpcomponents'
     }
     compile 'pub.devrel:easypermissions:0.1.5'
-    compile 'com.roomorama:caldroid:3.0.1'
+    compile 'com.github.satyan:sugar:1.5'
     testCompile 'junit:junit:4.12'
 }

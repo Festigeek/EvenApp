@@ -21,8 +21,12 @@ import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.roomorama.caldroid.CaldroidFragment;
+import com.orm.SugarRecord;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import ch.hes_so.eventapp.models.Person;
 
 public class MainActivity extends AppCompatActivity {
     private String[] mListsTitles;
@@ -31,13 +35,20 @@ public class MainActivity extends AppCompatActivity {
     private FrameLayout fragContainer;
     private ActionBarDrawerToggle mDrawerToggle;
 
-    private void changePage(android.support.v4.app.Fragment frag) {
-        fragContainer.removeAllViews();
+    private void initialize() {
+        // Init Peoples & Calendars
+        Integer nb_person = (int) Person.count(Person.class);
+        if(nb_person == -1 || nb_person == 0) {
+            List<Person> peoples = new ArrayList<>();
 
-        android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.content_main, frag);
-        transaction.addToBackStack(null);
-        transaction.commit();
+            peoples.add(new Person("Némar", "Jean", 2, "o120cokuf4u6dg54ptcssr0k0g@group.calendar.google.com"));
+            peoples.add(new Person("Tremblais", "Jean", 2, "f2jbpa6gsigck7nf0015imk674@group.calendar.google.com"));
+            peoples.add(new Person("Moret", "Jérôme", 0, "f93vo2livmhsfib9lgo8cdtoh8@group.calendar.google.com"));
+            peoples.add(new Person("Curty", "P-Alain", 0, "lmpprsl9ui07n410e8en3t5jdg@group.calendar.google.com"));
+            peoples.add(new Person("Cussonais", "Simon", 1, "jmldhmjj0f8rba73ifja32drp8@group.calendar.google.com"));
+
+            SugarRecord.saveInTx(peoples);
+        }
     }
 
     private void changePage(android.app.Fragment frag) {
@@ -54,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_layout);
 
+        this.initialize();
+
         fragContainer = (FrameLayout) findViewById(R.id.content_main);
         mListsTitles = getResources().getStringArray(R.array.list_menu);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
@@ -66,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
                         changePage(new PersonListFragment());
                         break;
                     case 1:
-                        changePage(new CaldroidFragment());
+                        //changePage(new ...);
                         break;
                     case 2:
                         break;

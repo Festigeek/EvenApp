@@ -2,6 +2,7 @@ package ch.hes_so.eventapp;
 
 import android.app.Activity;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+
+import ch.hes_so.eventapp.models.Person;
 
 /**
  * Created by Mysteriosis on 20.10.16.
@@ -29,6 +32,7 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     public PersonRecyclerAdapter(Activity activity, ArrayList<Person> listPeoples)
     {
+        Log.i("SIZE: ", String.valueOf(listPeoples.size()));
         this.people = listPeoples;
         this.activity = activity;
     }
@@ -41,7 +45,7 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             @Override
             public void onClick(View v) {
                 Person selectedItem = people.get((Integer)v.getTag());
-                Toast toast = Toast.makeText(v.getContext(), "Element selectionne : " + selectedItem.getNom(), Toast.LENGTH_SHORT);
+                Toast toast = Toast.makeText(v.getContext(), "Element selectionne : " + selectedItem.getLastname(), Toast.LENGTH_SHORT);
                 toast.show();
 
                 //TODO: Instancier le Fragment correspondant
@@ -59,7 +63,7 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder h, int position) {
         PersonRecyclerAdapter.ViewHolder holder = (PersonRecyclerAdapter.ViewHolder) h;
-        holder.name.setText(this.people.get(position).getNom() + " " + this.people.get(position).getPrenom());
+        holder.name.setText(this.people.get(position).getLastname() + " " + this.people.get(position).getFirstname());
     }
 
     @Override

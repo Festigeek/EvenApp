@@ -11,25 +11,16 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 
+import ch.hes_so.eventapp.models.Person;
+
 /**
  * Created by Mysteriosis on 17.11.16.
  */
 
 public class PersonListFragment extends Fragment {
-    private ArrayList<Person> peoples = new ArrayList<Person>();
-
     private RecyclerView mRecyclerView;
 
-
     // Private functions
-
-    private void initList(ArrayList<Person> p)
-    {
-        p.add(new Person("Tremblais", "Jean", 2));
-        p.add(new Person("Cussonais", "Simon", 1));
-        p.add(new Person("Curty", "P-Alain", 0));
-        p.add(new Person("Moret", "Jérôme", 0));
-    }
 
     private void manageItem(String item) {
 
@@ -48,14 +39,14 @@ public class PersonListFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        initList(peoples);
+        //initList(peoples);
 
         mRecyclerView.setHasFixedSize(true);
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        PersonRecyclerAdapter adapter = new PersonRecyclerAdapter(getActivity(), peoples);
+        PersonRecyclerAdapter adapter = new PersonRecyclerAdapter(getActivity(), (ArrayList)Person.listAll(Person.class));
         mRecyclerView.setAdapter(adapter);
 
 
