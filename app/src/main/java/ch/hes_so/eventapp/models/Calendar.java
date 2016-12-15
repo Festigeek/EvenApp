@@ -7,6 +7,7 @@ import com.orm.SugarRecord;
  */
 
 public class Calendar extends SugarRecord {
+    static String domain = "group.calendar.google.com";
     String calId;
     Person person;
 
@@ -18,5 +19,9 @@ public class Calendar extends SugarRecord {
 
     public String getCalId() {
         return calId;
+    }
+
+    public String getCompleteUrl() {
+        return this.calId + "@" + Calendar.domain;
     }
 }

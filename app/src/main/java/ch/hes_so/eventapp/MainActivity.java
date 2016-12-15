@@ -41,11 +41,11 @@ public class MainActivity extends AppCompatActivity {
         if(nb_person == -1 || nb_person == 0) {
             List<Person> peoples = new ArrayList<>();
 
-            peoples.add(new Person("Némar", "Jean", 2, "o120cokuf4u6dg54ptcssr0k0g@group.calendar.google.com"));
-            peoples.add(new Person("Tremblais", "Jean", 2, "f2jbpa6gsigck7nf0015imk674@group.calendar.google.com"));
-            peoples.add(new Person("Moret", "Jérôme", 0, "f93vo2livmhsfib9lgo8cdtoh8@group.calendar.google.com"));
-            peoples.add(new Person("Curty", "P-Alain", 0, "lmpprsl9ui07n410e8en3t5jdg@group.calendar.google.com"));
-            peoples.add(new Person("Cussonais", "Simon", 1, "jmldhmjj0f8rba73ifja32drp8@group.calendar.google.com"));
+            peoples.add(new Person("Némar", "Jean", 2, "o120cokuf4u6dg54ptcssr0k0g"));
+            peoples.add(new Person("Tremblais", "Jean", 2, "f2jbpa6gsigck7nf0015imk674"));
+            peoples.add(new Person("Moret", "Jérôme", 0, "f93vo2livmhsfib9lgo8cdtoh8"));
+            peoples.add(new Person("Curty", "P-Alain", 0, "lmpprsl9ui07n410e8en3t5jdg"));
+            peoples.add(new Person("Cussonais", "Simon", 1, "jmldhmjj0f8rba73ifja32drp8"));
 
             SugarRecord.saveInTx(peoples);
         }
