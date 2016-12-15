@@ -6,10 +6,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.plus.People;
+
 import java.util.ArrayList;
+import java.util.List;
 
 import ch.hes_so.eventapp.models.Person;
 
@@ -18,23 +22,26 @@ import ch.hes_so.eventapp.models.Person;
  */
 
 public class PersonRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    private ArrayList<Person> people;
+    private List<Person> people;
     private Activity activity;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView name;
+        public LinearLayout layout;
 
         public ViewHolder(View v) {
             super(v);
             this.name = (TextView) v.findViewById(R.id.name);
+            this.layout = (LinearLayout) v.findViewById(R.id.list_item);
         }
     }
 
-    public PersonRecyclerAdapter(Activity activity, ArrayList<Person> listPeoples)
+    public PersonRecyclerAdapter(Activity activity)
     {
-        Log.i("SIZE: ", String.valueOf(listPeoples.size()));
-        this.people = listPeoples;
+        this.people = Person.listAll(Person.class);
         this.activity = activity;
+
+        Log.i("SIZE: ", String.valueOf(this.people.size()));
     }
 
 
@@ -44,9 +51,8 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Person selectedItem = people.get((Integer)v.getTag());
-                Toast toast = Toast.makeText(v.getContext(), "Element selectionne : " + selectedItem.getLastname(), Toast.LENGTH_SHORT);
-                toast.show();
+                Person p = Person.findById(Person.class, (Long)v.getTag());
+                Toast.makeText(v.getContext(), "Element selectionne : " + p.getLastname(), Toast.LENGTH_SHORT).show();
 
                 //TODO: Instancier le Fragment correspondant
 //                Fragment frag = new PersonListFragment();
@@ -62,8 +68,10 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder h, int position) {
+        Person p = this.people.get(position);
         PersonRecyclerAdapter.ViewHolder holder = (PersonRecyclerAdapter.ViewHolder) h;
-        holder.name.setText(this.people.get(position).getLastname() + " " + this.people.get(position).getFirstname());
+        holder.name.setText(p.getLastname() + " " + p.getFirstname());
+        holder.layout.setTag(p.getId());
     }
 
     @Override
