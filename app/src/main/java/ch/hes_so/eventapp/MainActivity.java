@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
                         changePage(new PersonListFragment());
                         break;
                     case 1:
-                        //changePage(new ...);
+                        changePage(new CalendarWebViewFragment());
                         break;
                     case 2:
                         break;
