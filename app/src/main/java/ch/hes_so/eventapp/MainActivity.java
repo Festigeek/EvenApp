@@ -25,6 +25,7 @@ import com.orm.SugarRecord;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import ch.hes_so.eventapp.models.Person;
 
@@ -36,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private ActionBarDrawerToggle mDrawerToggle;
 
     private void initialize() {
+
         // Init Peoples & Calendars
         Integer nb_person = (int) Person.count(Person.class);
         if(nb_person == -1 || nb_person == 0) {
@@ -79,7 +81,16 @@ public class MainActivity extends AppCompatActivity {
                         changePage(new PersonListFragment());
                         break;
                     case 1:
-                        changePage(new CalendarWebViewFragment());
+                        CalendarWebViewFragment fragment = new CalendarWebViewFragment();
+                        Bundle bundle = new Bundle();
+                        String[] calendar_urls = new String[(int)Person.count(Person.class)];
+                        List<Person> persons = Person.listAll(Person.class);
+                        for(int i = 0; i < persons.size(); ++i) {
+                            calendar_urls[i] = persons.get(i).getCalendar().getCompleteUrl();
+                        }
+                        bundle.putStringArray("calendar_urls", calendar_urls);
+                        fragment.setArguments(bundle);
+                        changePage(fragment);
                         break;
                     case 2:
                         break;

@@ -11,9 +11,15 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.util.ArrayList;
+import java.util.Random;
+
+import ch.hes_so.eventapp.models.Calendar;
+
 public class CalendarWebViewFragment extends Fragment {
 
-    private String url = "https://calendar.google.com/calendar/embed?title=LAN%20Festigeek&showNav=0&showDate=0&showPrint=0&showTabs=0&showCalendars=0&showTz=0&mode=WEEK&height=600&wkst=2&hl=fr&bgcolor=%23FFFFFF&src=lan.festigeek%40gmail.com&color=%231B887A&src=o120cokuf4u6dg54ptcssr0k0g%40group.calendar.google.com&color=%232F6309&src=f2jbpa6gsigck7nf0015imk674%40group.calendar.google.com&color=%235C1158&src=f93vo2livmhsfib9lgo8cdtoh8%40group.calendar.google.com&color=%2329527A&src=lmpprsl9ui07n410e8en3t5jdg%40group.calendar.google.com&color=%23853104&src=jmldhmjj0f8rba73ifja32drp8%40group.calendar.google.com&color=%23AB8B00&ctz=Europe%2FZurich";
+    private String url = "https://calendar.google.com/calendar/embed?title=LAN%20Festigeek&showNav=0&showDate=0&showPrint=0&showTabs=0&showCalendars=0&showTz=0&mode=WEEK&wkst=2&hl=fr&bgcolor=%23FFFFFF&src=lan.festigeek%40gmail.com&color=%231B887A";
+    private String[] calendar_urls;
 
     private class CalendarWebViewClient extends WebViewClient {
         @Override
@@ -27,10 +33,20 @@ public class CalendarWebViewFragment extends Fragment {
         // Required empty public constructor
     }
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            Random random = new Random(1000);
+            calendar_urls = getArguments().getStringArray("calendar_urls");
+            for(String calendar_url : calendar_urls) {
+                // create a big random number - maximum is ffffff (hex) = 16777215 (dez)
+                //int nextInt = random.nextInt(256*256*256);
+                url += "&src="
+                        + calendar_url;
+                //System.out.println(url);
+            }
+        }
     }
 
     @Override

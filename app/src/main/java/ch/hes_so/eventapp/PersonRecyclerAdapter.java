@@ -1,6 +1,8 @@
 package ch.hes_so.eventapp;
 
 import android.app.Activity;
+import android.app.FragmentTransaction;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import ch.hes_so.eventapp.models.Person;
 
@@ -44,16 +47,21 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Person selectedItem = people.get((Integer)v.getTag());
-                Toast toast = Toast.makeText(v.getContext(), "Element selectionne : " + selectedItem.getLastname(), Toast.LENGTH_SHORT);
+                System.out.println((Integer)v.getTag());
+                //Person selectedItem = Pers.get((Integer)v.getTag());
+                /*Toast toast = Toast.makeText(v.getContext(), "Element selectionne : " + selectedItem.getLastname(), Toast.LENGTH_SHORT);
                 toast.show();
 
-                //TODO: Instancier le Fragment correspondant
-//                Fragment frag = new PersonListFragment();
-//                FragmentTransaction transaction = activity.getFragmentManager().beginTransaction();
-//                transaction.replace(android.R.id.content, frag);
-//                transaction.addToBackStack(null);
-//                transaction.commit();
+                CalendarWebViewFragment fragment = new CalendarWebViewFragment();
+                Bundle bundle = new Bundle();
+                String[] calendar_urls = new String[]{selectedItem.getCalendar().getCompleteUrl()};
+                bundle.putStringArray("calendar_urls", calendar_urls);
+                fragment.setArguments(bundle);
+
+                FragmentTransaction transaction = activity.getFragmentManager().beginTransaction();
+                transaction.replace(android.R.id.content, fragment);
+                transaction.addToBackStack(null);
+                transaction.commit();*/
             }
         });
         ViewHolder vh = new ViewHolder(v);
