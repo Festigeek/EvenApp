@@ -5,14 +5,20 @@ package ch.hes_so.eventapp;
  */
 
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
@@ -27,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.hes_so.eventapp.models.Person;
+import ch.hes_so.eventapp.services.LocationService;
 
 public class MainActivity extends AppCompatActivity {
     private String[] mListsTitles;
@@ -34,20 +41,37 @@ public class MainActivity extends AppCompatActivity {
     private ListView mDrawerList;
     private FrameLayout fragContainer;
     private ActionBarDrawerToggle mDrawerToggle;
+    private Person me;
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(me != null) {
+                me.setLatitude(intent.getDoubleExtra("Latitude", 0));
+                me.setLongitude(intent.getDoubleExtra("Longitude", 0));
+                me.save();
+            }
+        }
+    };
 
     private void initialize() {
         // Init Peoples & Calendars
         Integer nb_person = (int) Person.count(Person.class);
         if(nb_person == -1 || nb_person == 0) {
+            this.me = new Person("Curty", "P-Alain", 0, "lmpprsl9ui07n410e8en3t5jdg");
+            this.me.save();
+
             List<Person> peoples = new ArrayList<>();
 
             peoples.add(new Person("Némar", "Jean", 2, "o120cokuf4u6dg54ptcssr0k0g", 46.5196535, 6.632273400000031));
             peoples.add(new Person("Tremblais", "Jean", 2, "f2jbpa6gsigck7nf0015imk674"));
             peoples.add(new Person("Moret", "Jérôme", 0, "f93vo2livmhsfib9lgo8cdtoh8", 46.2312995, 6.919441600000027));
-            peoples.add(new Person("Curty", "P-Alain", 0, "lmpprsl9ui07n410e8en3t5jdg", 46.77847360000001, 6.641182999999955));
             peoples.add(new Person("Cussonais", "Simon", 1, "jmldhmjj0f8rba73ifja32drp8"));
 
             SugarRecord.saveInTx(peoples);
+        }
+        else {
+            this.me = Person.find(Person.class, "firstname = ? AND lastname = ?", "P-Alain", "Curty").get(0);
         }
     }
 
@@ -67,6 +91,9 @@ public class MainActivity extends AppCompatActivity {
 
         this.initialize();
 
+        Intent intent = new Intent(this, LocationService.class);
+        startService(intent);
+
         fragContainer = (FrameLayout) findViewById(R.id.content_main);
         mListsTitles = getResources().getStringArray(R.array.list_menu);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
@@ -82,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                         changePage(new CalendarWebViewFragment());
                         break;
                     case 2:
-                        changePage(MapsFragment.newInstance(Person.first(Person.class).getId()));
+                        changePage(new MapsFragment());
                         break;
                     case 3:
                         break;
@@ -134,9 +161,21 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
+        registerReceiver(this.receiver, new IntentFilter(LocationService.MESSAGE));
         PersonListFragment frag = new PersonListFragment();
         getFragmentManager().beginTransaction().add(R.id.content_main, frag).commit();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(this.receiver, new IntentFilter(LocationService.MESSAGE));
+    }
+
+    @Override
+    protected void onStop() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(this.receiver);
+        super.onStop();
     }
 
     @Override
@@ -168,5 +207,4 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
 }

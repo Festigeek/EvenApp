@@ -52,6 +52,7 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             @Override
             public void onClick(View v) {
                 Person p = Person.findById(Person.class, (Long)v.getTag());
+                Log.i("INFO_PERSON", p.toString());
                 Toast.makeText(v.getContext(), "Element selectionne : " + p.getLastname(), Toast.LENGTH_SHORT).show();
 
                 //TODO: Instancier le Fragment correspondant
@@ -68,6 +69,7 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder h, int position) {
+        //TODO: Recupérer des infos via l'API Calendar pour savoir si les gens sont occupés ou non (dans une tâche)
         Person p = this.people.get(position);
         PersonRecyclerAdapter.ViewHolder holder = (PersonRecyclerAdapter.ViewHolder) h;
         holder.name.setText(p.getLastname() + " " + p.getFirstname());
