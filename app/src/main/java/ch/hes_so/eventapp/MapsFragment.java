@@ -1,6 +1,7 @@
 package ch.hes_so.eventapp;
 
 import android.app.Fragment;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,13 +22,18 @@ import ch.hes_so.eventapp.models.Person;
 
 public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
+    private LocationManager locationManager;
     private GoogleMap mMap;
     private Person person;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.person = Person.findById(Person.class, getArguments().getLong("pid"));
+
+        if(getArguments() != null && getArguments().containsKey("pid"))
+            this.person = Person.findById(Person.class, getArguments().getLong("pid"));
+        else
+            this.person = null;
     }
 
     public static MapsFragment newInstance(Long id) {
@@ -53,29 +59,30 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         return view;
     }
 
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        ArrayList<Person> people;
+        LatLng posCam = new LatLng(46.77891815318736, 6.659035412594676); // HEIG-VD
+        //TODO: Prendre la position GPS actuelle du terminal
 
-        if(this.person.getLatitude() == null || this.person.getLongitude() == null) {
-            Log.e("Person", this.person.toString());
-            Toast.makeText(getContext(), "Emplacement de " + this.person.getFirstname() + " " + this.person.getLastname() + " inconnu...", Toast.LENGTH_SHORT).show();
+        if(this.person != null) {
+            if (this.person.getLatitude() == null || this.person.getLongitude() == null) {
+                Log.e("Person", this.person.toString());
+                Toast.makeText(getContext(), "Emplacement de " + this.person.getFirstname() + " " + this.person.getLastname() + " inconnu...", Toast.LENGTH_SHORT).show();
+            } else {
+                posCam = this.person.getCoords();
+                mMap.addMarker(new MarkerOptions().position(posCam).title(this.person.getFirstname() + " " + this.person.getLastname()));
+            }
         }
         else {
-            LatLng position = this.person.getCoords();
-            mMap.addMarker(new MarkerOptions().position(position).title(this.person.getFirstname() + " " + this.person.getLastname()));
-            //mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 18.0f));
+            people = (ArrayList<Person>) Person.listAll(Person.class);
+            for(Person p : people) {
+                if (p.getLatitude() != null && p.getLongitude() != null)
+                    mMap.addMarker(new MarkerOptions().position(p.getCoords()).title(p.getFirstname() + " " + p.getLastname()));
+            }
         }
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(posCam, 18.0f));
     }
 }
