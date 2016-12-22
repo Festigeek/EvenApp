@@ -53,8 +53,10 @@ public class CalendarWebViewFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
-        fab.setVisibility(View.VISIBLE);
+        if(calendar_urls.length == 1) {
+            FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+            fab.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
