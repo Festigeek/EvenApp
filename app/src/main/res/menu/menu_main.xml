@@ -11,7 +11,8 @@
         android:title="@string/action_settings"
         app:showAsAction="never"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:visible="false" />
 
     <item
         android:id="@+id/action_add"
@@ -20,7 +21,8 @@
         android:title="Add"
         app:showAsAction="ifRoom"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:visible="false" />
 
     <item
         android:id="@+id/action_modify"
@@ -29,7 +31,8 @@
         android:title="Modify"
         app:showAsAction="ifRoom"
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content" />
+        android:layout_width="wrap_content"
+        android:visible="false" />
 
     <item
         android:id="@+id/action_search"
@@ -38,5 +41,6 @@
         android:title="Search"
         app:showAsAction="ifRoom"
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content" />
+        android:layout_width="wrap_content"
+        android:visible="false" />
 </menu>
