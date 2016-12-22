@@ -46,21 +46,8 @@ public class PersonListFragment extends Fragment {
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        PersonRecyclerAdapter adapter = new PersonRecyclerAdapter(getActivity(), (ArrayList)Person.listAll(Person.class));
+        PersonRecyclerAdapter adapter = new PersonRecyclerAdapter(getActivity());
         mRecyclerView.setAdapter(adapter);
-
-
-        //--------------------------------------
-        // check if the permission is granted
-        //--------------------------------------
-
-        /*
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            init_phone_music_grid();
-        } else {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
-        }
-        */
     }
 
     @Override

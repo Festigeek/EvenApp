@@ -43,17 +43,17 @@ public class MainActivity extends AppCompatActivity {
         if(nb_person == -1 || nb_person == 0) {
             List<Person> peoples = new ArrayList<>();
 
-            peoples.add(new Person("Némar", "Jean", 2, "o120cokuf4u6dg54ptcssr0k0g"));
+            peoples.add(new Person("Némar", "Jean", 2, "o120cokuf4u6dg54ptcssr0k0g", 46.5196535, 6.632273400000031));
             peoples.add(new Person("Tremblais", "Jean", 2, "f2jbpa6gsigck7nf0015imk674"));
-            peoples.add(new Person("Moret", "Jérôme", 0, "f93vo2livmhsfib9lgo8cdtoh8"));
-            peoples.add(new Person("Curty", "P-Alain", 0, "lmpprsl9ui07n410e8en3t5jdg"));
+            peoples.add(new Person("Moret", "Jérôme", 0, "f93vo2livmhsfib9lgo8cdtoh8", 46.2312995, 6.919441600000027));
+            peoples.add(new Person("Curty", "P-Alain", 0, "lmpprsl9ui07n410e8en3t5jdg", 46.77847360000001, 6.641182999999955));
             peoples.add(new Person("Cussonais", "Simon", 1, "jmldhmjj0f8rba73ifja32drp8"));
 
             SugarRecord.saveInTx(peoples);
         }
     }
 
-    private void changePage(android.app.Fragment frag) {
+    public void changePage(android.app.Fragment frag) {
         fragContainer.removeAllViews();
 
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
                         changePage(fragment);
                         break;
                     case 2:
+                        changePage(MapsFragment.newInstance(Person.first(Person.class).getId()));
                         break;
                     case 3:
                         break;
