@@ -3,6 +3,7 @@ package ch.hes_so.eventapp;
 import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.plus.People;
 
 import java.util.ArrayList;
@@ -53,21 +55,23 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Person p = Person.findById(Person.class, (Long)v.getTag());
-                Log.i("INFO_PERSON", p.toString());
-                Toast.makeText(v.getContext(), "Element selectionne : " + p.getLastname(), Toast.LENGTH_SHORT).show();
-                
-                // TODO : Régler le problème des couleurs
+                final Person p = Person.findById(Person.class, (Long)v.getTag());
+
                 CalendarWebViewFragment fragment = new CalendarWebViewFragment();
                 Bundle bundle = new Bundle();
                 String[] calendar_urls = new String[]{p.getCalendar().getCompleteUrl()};
                 bundle.putStringArray("calendar_urls", calendar_urls);
                 fragment.setArguments(bundle);
 
-                FragmentTransaction transaction = activity.getFragmentManager().beginTransaction();
-                transaction.replace(R.id.content_main, fragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
+                FloatingActionButton fab = (FloatingActionButton) activity.findViewById(R.id.fab);
+                fab.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        changePage(MapsFragment.newInstance(p.getId()));
+                    }
+                });
+
+                changePage(fragment);
             }
         });
         ViewHolder vh = new ViewHolder(v);
@@ -86,5 +90,12 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     @Override
     public int getItemCount() {
         return this.people.size();
+    }
+
+    private void changePage(android.app.Fragment frag) {
+        FragmentTransaction transaction = activity.getFragmentManager().beginTransaction();
+        transaction.replace(R.id.content_main, frag);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 }

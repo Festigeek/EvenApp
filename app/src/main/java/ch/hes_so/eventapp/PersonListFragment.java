@@ -2,6 +2,7 @@ package ch.hes_so.eventapp;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -48,6 +49,9 @@ public class PersonListFragment extends Fragment {
 
         PersonRecyclerAdapter adapter = new PersonRecyclerAdapter(getActivity());
         mRecyclerView.setAdapter(adapter);
+
+        FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+        fab.setVisibility(View.INVISIBLE);
     }
 
     @Override

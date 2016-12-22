@@ -3,6 +3,7 @@ package ch.hes_so.eventapp;
 import android.app.Fragment;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,6 +35,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             this.person = Person.findById(Person.class, getArguments().getLong("pid"));
         else
             this.person = null;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+        fab.setVisibility(View.INVISIBLE);
     }
 
     public static MapsFragment newInstance(Long id) {

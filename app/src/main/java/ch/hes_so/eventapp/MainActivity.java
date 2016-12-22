@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -78,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void changePage(android.app.Fragment frag) {
+    private void changePage(android.app.Fragment frag) {
         fragContainer.removeAllViews();
 
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
@@ -111,12 +112,15 @@ public class MainActivity extends AppCompatActivity {
                     case 1:
                         CalendarWebViewFragment fragment = new CalendarWebViewFragment();
                         Bundle bundle = new Bundle();
+
+                        // Add calendars of all persons
                         String[] calendar_urls = new String[(int)Person.count(Person.class)];
                         List<Person> persons = Person.listAll(Person.class);
                         for(int i = 0; i < persons.size(); ++i) {
                             calendar_urls[i] = persons.get(i).getCalendar().getCompleteUrl();
                         }
                         bundle.putStringArray("calendar_urls", calendar_urls);
+
                         fragment.setArguments(bundle);
                         changePage(fragment);
                         break;
@@ -160,14 +164,6 @@ public class MainActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
-
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                manageItem("");
-//            }
-//        });
     }
 
     @Override
