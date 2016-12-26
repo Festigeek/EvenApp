@@ -2,14 +2,18 @@ package ch.hes_so.eventapp.models;
 
 import com.orm.SugarRecord;
 
+import java.util.List;
+
+import ch.hes_so.eventapp.MainActivity;
+
 /**
  * Created by Mysteriosis on 01.12.16.
  */
 
 public class Calendar extends SugarRecord {
-    static String domain = "group.calendar.google.com";
+    public static String DOMAIN = "group.calendar.google.com";
     String calId;
-    Person person;
+    Boolean busy = false;
 
     public Calendar(){}
 
@@ -22,6 +26,13 @@ public class Calendar extends SugarRecord {
     }
 
     public String getCompleteUrl() {
-        return this.calId + "@" + Calendar.domain;
+        return this.calId + "@" + DOMAIN;
+    }
+
+    public Boolean isBusy() {
+        return this.busy;
+    }
+    public void setBusy(Boolean bool) {
+        this.busy = bool;
     }
 }

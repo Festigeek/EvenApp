@@ -97,22 +97,6 @@ public class LocationService extends Service
         }
     }
 
-    /*
-    public static Thread performOnBackgroundThread(final Runnable runnable) {
-        final Thread t = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    runnable.run();
-                }
-                finally { }
-            }
-        };
-        t.start();
-        return t;
-    }
-    */
-
     public class MyLocationListener implements LocationListener {
         public void onLocationChanged(final Location loc)
         {

@@ -3,6 +3,9 @@ package ch.hes_so.eventapp.models;
 import com.google.android.gms.maps.model.LatLng;
 import com.orm.SugarRecord;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Mysteriosis on 16.11.16.
  */
@@ -15,7 +18,7 @@ public class Person extends SugarRecord {
     private Double longitude;
     private Boolean favorite;
 
-    private Calendar calendar;
+    Calendar calendar;
 
     // Constructors
     public Person(){}
@@ -54,7 +57,7 @@ public class Person extends SugarRecord {
             ", latitude: " + this.latitude +
             ", longitude: " + this.longitude +
             ", favorite: " + this.favorite +
-            ", CalId: "  + this.calendar.getCalId();
+            ", CalId: "  + this.getCalendar().getCalId();
     }
 
     // Getters & Setters
@@ -86,12 +89,12 @@ public class Person extends SugarRecord {
         this.favorite = favorite;
     }
 
-    public Calendar getCalendar() {
-        return calendar;
-    }
-    public void setCalendar(Calendar calendar) { this.calendar = calendar; }
-    public void setCalendar(String id) {
-        this.calendar = new Calendar(id);
+    public Calendar getCalendar() { return this.calendar; }
+    public void setCalendar(Calendar cal) { this.calendar = cal; }
+    public void setCalendar(String calId) {
+        Calendar cal = new Calendar(calId);
+        cal.save();
+        this.calendar = cal;
     }
 
     public Double getLongitude() { return longitude; }

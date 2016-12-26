@@ -5,18 +5,13 @@ import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.plus.People;
-
-import java.util.ArrayList;
 import java.util.List;
 
 import ch.hes_so.eventapp.models.Person;
@@ -30,13 +25,17 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     private Activity activity;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        public RelativeLayout layout;
         public TextView name;
-        public LinearLayout layout;
+        public ImageView favorite;
+        public ImageView presence;
 
         public ViewHolder(View v) {
             super(v);
+            this.layout = (RelativeLayout) v.findViewById(R.id.list_item);
             this.name = (TextView) v.findViewById(R.id.name);
-            this.layout = (LinearLayout) v.findViewById(R.id.list_item);
+            this.favorite = (ImageView) v.findViewById(R.id.favorite_image);
+            this.presence = (ImageView) v.findViewById(R.id.presence_image);
         }
     }
 
@@ -44,10 +43,7 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     {
         this.people = Person.listAll(Person.class);
         this.activity = activity;
-
-        Log.i("SIZE: ", String.valueOf(this.people.size()));
     }
-
 
     @Override
     public PersonRecyclerAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -80,11 +76,22 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder h, int position) {
-        //TODO: Recupérer des infos via l'API Calendar pour savoir si les gens sont occupés ou non (dans une tâche)
+        this.people = Person.listAll(Person.class);
         Person p = this.people.get(position);
-        PersonRecyclerAdapter.ViewHolder holder = (PersonRecyclerAdapter.ViewHolder) h;
-        holder.name.setText(p.getLastname() + " " + p.getFirstname());
+        ViewHolder holder = (ViewHolder) h;
+
         holder.layout.setTag(p.getId());
+        holder.name.setText(p.getLastname() + " " + p.getFirstname());
+
+        if(p.getFavorite())
+            holder.presence.setImageResource(android.R.drawable.btn_star_big_on);
+        else
+            holder.presence.setImageResource(android.R.drawable.btn_star_big_off);
+
+        if(p.getCalendar() == null || !p.getCalendar().isBusy())
+            holder.presence.setImageResource(android.R.drawable.presence_online);
+        else
+            holder.presence.setImageResource(android.R.drawable.presence_busy);
     }
 
     @Override

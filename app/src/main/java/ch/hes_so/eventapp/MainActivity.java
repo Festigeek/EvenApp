@@ -4,20 +4,23 @@ package ch.hes_so.eventapp;
  * Created by Mysteriosis on 12.11.16.
  */
 
+import android.accounts.AccountManager;
+import android.app.Dialog;
 import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
+import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -29,34 +32,43 @@ import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.util.ExponentialBackOff;
 import com.orm.SugarRecord;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 import ch.hes_so.eventapp.models.Person;
+import ch.hes_so.eventapp.services.CalendarTask;
 import ch.hes_so.eventapp.services.LocationService;
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks {
+    public static final int REQUEST_ACCOUNT_PICKER = 1000;
+    public static final int REQUEST_AUTHORIZATION = 1001;
+    public static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
+    public static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
+    public static final String PREF_ACCOUNT_NAME = "accountName";
+
+    public static final int REQUEST_LOCALISATION = 500;
     private String[] mListsTitles;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private FrameLayout fragContainer;
     private ActionBarDrawerToggle mDrawerToggle;
+//    private ProgressDialog mProgress;
+
     private Person me;
+    public GoogleAccountCredential mCredential;
 
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if(me != null) {
-                me.setLatitude(intent.getDoubleExtra("Latitude", 0));
-                me.setLongitude(intent.getDoubleExtra("Longitude", 0));
-                me.save();
-            }
-        }
-    };
-
+    /**
+     * Initialize SQLite at first startup (DB seed).
+     */
     private void initialize() {
 
         // Init Peoples & Calendars
@@ -145,6 +157,9 @@ public class MainActivity extends AppCompatActivity {
         });
         mDrawerList.setAdapter(new ArrayAdapter<>(this, R.layout.drawer_list_item, mListsTitles));
 
+//        mProgress = new ProgressDialog(this);
+//        mProgress.setMessage("Communication avec Google Calendar API ...");
+
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.app_name, R.string.app_description);
         mDrawerLayout.addDrawerListener(mDrawerToggle);
@@ -154,38 +169,48 @@ public class MainActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-                    mDrawerLayout.closeDrawer(GravityCompat.START);
-                } else {
-                    mDrawerLayout.openDrawer(GravityCompat.START);
-                }
+            if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+                mDrawerLayout.closeDrawer(GravityCompat.START);
+            } else {
+                mDrawerLayout.openDrawer(GravityCompat.START);
+            }
             }
         });
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
+
+        // Initialize credentials.
+        mCredential = GoogleAccountCredential.usingOAuth2(
+            this, Arrays.asList(CalendarTask.SCOPES))
+            .setBackOff(new ExponentialBackOff());
+
+        // Check Permissions
+        checkPermissions();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        registerReceiver(this.receiver, new IntentFilter(LocationService.MESSAGE));
+        registerReceiver(this.locationReceiver, new IntentFilter(LocationService.MESSAGE));
+    }
 
-        PersonListFragment frag = new PersonListFragment();
-
-        getFragmentManager().beginTransaction().add(R.id.content_main, frag).commit();
+    @Override
+    protected void onStop() {
+        super.onStop();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(this.locationReceiver);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(this.receiver, new IntentFilter(LocationService.MESSAGE));
+        registerReceiver(this.locationReceiver, new IntentFilter(LocationService.MESSAGE));
     }
 
     @Override
-    protected void onStop() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(this.receiver);
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(this.locationReceiver);
     }
 
     @Override
@@ -204,29 +229,178 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+    }
 
-        if(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE){
-            Toast.makeText(getApplicationContext(), "Paysage", Toast.LENGTH_LONG).show();
+    /**
+     * Listener for Location service broadcast
+     */
+    private BroadcastReceiver locationReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(me != null) {
+                me.setLatitude(intent.getDoubleExtra("Latitude", 0));
+                me.setLongitude(intent.getDoubleExtra("Longitude", 0));
+                me.save();
+            }
         }
-        else {
-            Toast.makeText(getApplicationContext(), "Portrait", Toast.LENGTH_LONG).show();
+    };
+
+
+    /**
+     * All verifications to use CalendarAPI
+     */
+
+    /**
+     * Attempt to call the API, after verifying that all the preconditions are
+     * satisfied. The preconditions are: Google Play Services installed, an
+     * account was selected and the device currently has online access. If any
+     * of the preconditions are not satisfied, the app will prompt the user as
+     * appropriate.
+     */
+    private void checkPermissions() {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        if (apiAvailability.isGooglePlayServicesAvailable(this) != ConnectionResult.SUCCESS) {
+            final int connectionStatusCode = apiAvailability.isGooglePlayServicesAvailable(this);
+            if (apiAvailability.isUserResolvableError(connectionStatusCode)) {
+                Dialog dialog = apiAvailability.getErrorDialog(
+                    MainActivity.this,
+                    connectionStatusCode,
+                    REQUEST_GOOGLE_PLAY_SERVICES);
+                dialog.show();
+            }
+        }
+        else if (mCredential == null || mCredential.getSelectedAccountName() == null) {
+            chooseAccount();
+        }
+        else if (!isDeviceOnline()) {
+            Log.e("Connexion", "No network connection available.");
+        }
+
+        if(!EasyPermissions.hasPermissions(this, android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+            // Request the ACCESS_FINE_LOCATION permission via a user dialog
+            EasyPermissions.requestPermissions(
+                this,
+                "This app needs to access your localisation informations.",
+                REQUEST_LOCALISATION,
+                android.Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+
+        // Load PersonListFragment if all permission are granted.
+        PersonListFragment frag = new PersonListFragment();
+        getFragmentManager().beginTransaction().add(R.id.content_main, frag).commit();
+    }
+
+    /**
+     * Attempts to set the account used with the API credentials. If an account
+     * name was previously saved it will use that one; otherwise an account
+     * picker dialog will be shown to the user. Note that the setting the
+     * account to use with the credentials object requires the app to have the
+     * GET_ACCOUNTS permission, which is requested here if it is not already
+     * present. The AfterPermissionGranted annotation indicates that this
+     * function will be rerun automatically whenever the GET_ACCOUNTS permission
+     * is granted.
+     */
+    @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
+    private void chooseAccount() {
+        if (EasyPermissions.hasPermissions(this, android.Manifest.permission.GET_ACCOUNTS)) {
+            String accountName = getPreferences(Context.MODE_PRIVATE).getString(PREF_ACCOUNT_NAME, null);
+
+            if (accountName != null) {
+                mCredential.setSelectedAccountName(accountName);
+            }
+            else {
+                startActivityForResult(
+                    mCredential.newChooseAccountIntent(),
+                    REQUEST_ACCOUNT_PICKER
+                );
+            }
+        } else {
+            // Request the GET_ACCOUNTS permission via a user dialog
+            EasyPermissions.requestPermissions(
+                this,
+                "This app needs to access your Google account (via Contacts).",
+                REQUEST_PERMISSION_GET_ACCOUNTS,
+                android.Manifest.permission.GET_ACCOUNTS);
         }
     }
 
+    /**
+     * Called when an activity launched here (specifically, AccountPicker
+     * and authorization) exits, giving you the requestCode you started it with,
+     * the resultCode it returned, and any additional data from it.
+     * @param requestCode code indicating which activity result is incoming.
+     * @param resultCode code indicating the result of the incoming
+     *     activity result.
+     * @param data Intent (containing result data) returned by incoming
+     *     activity result.
+     */
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case 0: {
-
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    //TODO: Load list
-                } else {
-                    new AlertDialog.Builder(this).setTitle("Permission Error").setMessage("Missing permission(s)").setNeutralButton("Close", null).show();
-                    this.finish();
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch(requestCode) {
+            case REQUEST_GOOGLE_PLAY_SERVICES:
+                if (resultCode != RESULT_OK) {
+                    Toast.makeText(getApplicationContext(), "This app requires Google Play Services. Please install " +
+                            "Google Play Services on your device and relaunch this app.", Toast.LENGTH_LONG).show();
                 }
+                else {
+                    checkPermissions();
+                }
+                break;
+            case REQUEST_ACCOUNT_PICKER:
+                if (resultCode == RESULT_OK && data != null && data.getExtras() != null) {
+                    String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
 
-                return;
-            }
+                    if (accountName != null) {
+                        SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.putString(PREF_ACCOUNT_NAME, accountName);
+                        editor.apply();
+                        mCredential.setSelectedAccountName(accountName);
+                        checkPermissions();
+                    }
+                }
+                break;
+            case REQUEST_AUTHORIZATION:
+                if (resultCode == RESULT_OK) {
+                    checkPermissions();
+                }
+                break;
         }
+    }
+
+    /**
+     * Respond to requests for permissions at runtime for API 23 and above.
+     * @param requestCode The request code passed in
+     *     requestPermissions(android.app.Activity, String, int, String[])
+     * @param permissions The requested permissions. Never null.
+     * @param grantResults The grant results for the corresponding permissions
+     *     which is either PERMISSION_GRANTED or PERMISSION_DENIED. Never null.
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    /**
+     * Checks whether the device currently has a network connection.
+     * @return true if the device has a network connection, false otherwise.
+     */
+    private boolean isDeviceOnline() {
+        NetworkInfo networkInfo = ((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
+        return (networkInfo != null && networkInfo.isConnected());
+    }
+
+    @Override
+    public void onPermissionsGranted(int requestCode, List<String> perms) {
+        // Do nothing.
+    }
+
+    @Override
+    public void onPermissionsDenied(int requestCode, List<String> perms) {
+        // Do nothing.
     }
 }
