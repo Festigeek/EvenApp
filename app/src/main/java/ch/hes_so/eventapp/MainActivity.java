@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         // Init Peoples & Calendars
         Integer nb_person = (int) Person.count(Person.class);
         if(nb_person == -1 || nb_person == 0) {
-            this.me = new Person("Curty", "P-Alain", 0, "lmpprsl9ui07n410e8en3t5jdg");
+            this.me = new Person("Votre", "Compte", 0, "lmpprsl9ui07n410e8en3t5jdg");
             this.me.save();
 
             List<Person> peoples = new ArrayList<>();
